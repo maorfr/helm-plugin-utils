@@ -221,7 +221,7 @@ func Execute(cmd []string) []byte {
 		log.Fatal(err)
 	}
 
-	output, err := exec.Command(binary, cmd[1:]...).CombinedOutput()
+	output, err := exec.Command(binary, cmd[1:]...).Output()
 	if err != nil {
 		log.Println("Error: command execution failed:", cmd)
 		log.Fatal(string(output))
