@@ -230,6 +230,22 @@ func Execute(cmd []string) []byte {
 	output, err := exec.Command(binary, cmd[1:]...).Output()
 	if err != nil {
 		log.Println("Error: command execution failed:", cmd)
+	}
+
+	return output
+}
+
+// ExecuteCombined executes a command and resturns the combined output
+func ExecuteCombined(cmd []string) []byte {
+	binary := cmd[0]
+	_, err := exec.LookPath(binary)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output, err := exec.Command(binary, cmd[1:]...).CombinedOutput()
+	if err != nil {
+		log.Println("Error: command execution failed:", cmd)
 		log.Fatal(string(output))
 	}
 

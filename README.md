@@ -16,4 +16,6 @@ A collection of utility functions for use within Helm plugins
 
 `GetTillerStorage` - returns the storage type of tiller (configmaps/secrets)
 
-`Execute` - executes a command
+`Execute` - executes a command and returns the output
+
+`ExecuteCombined` - executes a command a returns the combined output of stdout and stderr
