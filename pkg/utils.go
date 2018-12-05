@@ -92,15 +92,22 @@ func ListReleases(o ListOptions) ([]ReleaseData, error) {
 	return releasesData, nil
 }
 
+type ListReleaseNamesInNamespaceOptions struct {
+	Namespace       string
+	TillerNamespace string
+}
+
 // ListReleaseNamesInNamespace returns a string list of all releases in a provided namespace
-func ListReleaseNamesInNamespace(namespace string) (string, error) {
-	releases, err := ListReleases(ListOptions{})
+func ListReleaseNamesInNamespace(o ListReleaseNamesInNamespaceOptions) (string, error) {
+	releases, err := ListReleases(ListOptions{
+		TillerNamespace: o.TillerNamespace,
+	})
 	if err != nil {
 		return "", err
 	}
 	uniqReleases := make(map[string]string)
 	for _, r := range releases {
-		if r.Namespace != namespace {
+		if r.Namespace != o.Namespace {
 			continue
 		}
 		uniqReleases[r.Name] = ""
