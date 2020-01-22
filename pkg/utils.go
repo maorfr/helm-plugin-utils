@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -172,14 +173,24 @@ func DecodeRelease(data string) (*rspb.Release, error) {
 
 // GetClientSet returns a kubernetes ClientSet
 func GetClientSet() *kubernetes.Clientset {
-	var kubeconfig string
+	var kubeConfigFiles []string
 	if kubeConfigPath := os.Getenv("KUBECONFIG"); kubeConfigPath != "" {
-		kubeconfig = kubeConfigPath
+		// The KUBECONFIG environment variable holds a list of kubeconfig files.
+		// For Linux and Mac, the list is colon-delimited. For Windows, the list
+		// is semicolon-delimited. Ref:
+		// https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/#the-kubeconfig-environment-variable
+		var separator string
+		if runtime.GOOS == "windows" {
+			separator = ";"
+		} else {
+			separator = ":"
+		}
+		kubeConfigFiles = strings.Split(kubeConfigPath, separator)
 	} else {
-		kubeconfig = filepath.Join(os.Getenv("HOME"), ".kube", "config")
+		kubeConfigFiles = append(kubeConfigFiles, filepath.Join(os.Getenv("HOME"), ".kube", "config"))
 	}
 
-	config, err := buildConfigFromFlags("", kubeconfig)
+	config, err := buildConfigFromFlags("", kubeConfigFiles)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -192,9 +203,9 @@ func GetClientSet() *kubernetes.Clientset {
 	return clientset
 }
 
-func buildConfigFromFlags(context, kubeconfigPath string) (*rest.Config, error) {
+func buildConfigFromFlags(context string, kubeConfigFiles []string) (*rest.Config, error) {
 	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		&clientcmd.ClientConfigLoadingRules{Precedence: kubeConfigFiles},
 		&clientcmd.ConfigOverrides{
 			CurrentContext: context,
 		}).ClientConfig()
