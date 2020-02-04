@@ -173,8 +173,15 @@ func DecodeRelease(data string) (*rspb.Release, error) {
 
 // GetClientSet returns a kubernetes ClientSet
 func GetClientSet() *kubernetes.Clientset {
+	return GetClientSetWithKubeConfig("", "")
+}
+
+// GetClientSetWithKubeConfig returns a kubernetes ClientSet
+func GetClientSetWithKubeConfig(kubeConfigFile, context string) *kubernetes.Clientset {
 	var kubeConfigFiles []string
-	if kubeConfigPath := os.Getenv("KUBECONFIG"); kubeConfigPath != "" {
+	if kubeConfigFile != "" {
+		kubeConfigFiles = append(kubeConfigFiles, kubeConfigFile)
+	} else if kubeConfigPath := os.Getenv("KUBECONFIG"); kubeConfigPath != "" {
 		// The KUBECONFIG environment variable holds a list of kubeconfig files.
 		// For Linux and Mac, the list is colon-delimited. For Windows, the list
 		// is semicolon-delimited. Ref:
@@ -190,7 +197,7 @@ func GetClientSet() *kubernetes.Clientset {
 		kubeConfigFiles = append(kubeConfigFiles, filepath.Join(os.Getenv("HOME"), ".kube", "config"))
 	}
 
-	config, err := buildConfigFromFlags("", kubeConfigFiles)
+	config, err := buildConfigFromFlags(context, kubeConfigFiles)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
