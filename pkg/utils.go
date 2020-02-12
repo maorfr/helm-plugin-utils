@@ -240,6 +240,11 @@ func GetTillerStorage(tillerNamespace string) string {
 			storage = "secrets"
 		}
 	}
+	for _, c := range pods.Items[0].Spec.Containers[0].Args {
+		if strings.Contains(c, "storage=secret") {
+			storage = "secrets"
+		}
+	}
 
 	return storage
 }
