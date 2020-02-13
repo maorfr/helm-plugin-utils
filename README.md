@@ -1,6 +1,6 @@
-# Helm Plugin utility functions
+# Helm v2 utility functions
 
-A collection of utility functions for use within Helm plugins
+A collection of Helm v2 utility functions. 
 
 ## Functions
 
