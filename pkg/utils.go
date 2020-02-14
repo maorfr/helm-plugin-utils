@@ -47,6 +47,11 @@ type ReleaseData struct {
 
 // ListReleases lists all releases according to provided options
 func ListReleases(o ListOptions) ([]ReleaseData, error) {
+	return ListReleasesWithKubeConfig(o, "", "")
+}
+
+// ListReleasesWithKubeConfig lists all releases according to provided options
+func ListReleasesWithKubeConfig(o ListOptions, kubeConfigFile, context string) ([]ReleaseData, error) {
 	if o.TillerNamespace == "" {
 		o.TillerNamespace = "kube-system"
 	}
@@ -56,9 +61,9 @@ func ListReleases(o ListOptions) ([]ReleaseData, error) {
 	if o.ReleaseName != "" {
 		o.TillerLabel += fmt.Sprintf(",NAME=%s", o.ReleaseName)
 	}
-	clientSet := GetClientSet()
+	clientSet := GetClientSetWithKubeConfig(kubeConfigFile, context)
 	var releasesData []ReleaseData
-	storage := GetTillerStorage(o.TillerNamespace)
+	storage := GetTillerStorageWithKubeConfig(o.TillerNamespace, kubeConfigFile, context)
 	switch storage {
 	case "secrets":
 		secrets, err := clientSet.CoreV1().Secrets(o.TillerNamespace).List(metav1.ListOptions{
@@ -100,9 +105,14 @@ type ListReleaseNamesInNamespaceOptions struct {
 
 // ListReleaseNamesInNamespace returns a string list of all releases in a provided namespace
 func ListReleaseNamesInNamespace(o ListReleaseNamesInNamespaceOptions) (string, error) {
-	releases, err := ListReleases(ListOptions{
+	return ListReleaseNamesInNamespaceWithKubeConfig(o, "", "")
+}
+
+// ListReleaseNamesInNamespaceWithKubeConfig returns a string list of all releases in a provided namespace
+func ListReleaseNamesInNamespaceWithKubeConfig(o ListReleaseNamesInNamespaceOptions, kubeConfigFile, context string) (string, error) {
+	releases, err := ListReleasesWithKubeConfig(ListOptions{
 		TillerNamespace: o.TillerNamespace,
-	})
+	}, kubeConfigFile, context)
 	if err != nil {
 		return "", err
 	}
@@ -220,7 +230,12 @@ func buildConfigFromFlags(context string, kubeConfigFiles []string) (*rest.Confi
 
 // GetTillerStorage returns the storage type of tiller (configmaps/secrets)
 func GetTillerStorage(tillerNamespace string) string {
-	clientset := GetClientSet()
+	return GetTillerStorageWithKubeConfig(tillerNamespace, "", "")
+}
+
+// GetTillerStorageWithKubeConfig returns the storage type of tiller (configmaps/secrets)
+func GetTillerStorageWithKubeConfig(tillerNamespace, kubeConfigFile, context string) string {
+	clientset := GetClientSetWithKubeConfig(kubeConfigFile, context)
 	coreV1 := clientset.CoreV1()
 	listOptions := metav1.ListOptions{
 		LabelSelector: "name=tiller",
