@@ -241,8 +241,8 @@ func GetTillerStorage(tillerNamespace string) string {
 			storage = "secrets"
 		}
 	}
-	for _, c := range container.Args {
-		if strings.Contains(c, "storage=secret") {
+	for _, a := range container.Args {
+		if strings.Contains(a, "storage=secret") {
 			storage = "secrets"
 		}
 	}
