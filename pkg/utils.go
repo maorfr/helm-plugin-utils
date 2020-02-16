@@ -250,8 +250,14 @@ func GetTillerStorageWithKubeConfig(tillerNamespace, kubeConfigFile, context str
 	}
 
 	storage := "configmaps"
-	for _, c := range pods.Items[0].Spec.Containers[0].Command {
+	container := pods.Items[0].Spec.Containers[0]
+	for _, c := range container.Command {
 		if strings.Contains(c, "secret") {
+			storage = "secrets"
+		}
+	}
+	for _, a := range container.Args {
+		if strings.Contains(a, "storage=secret") {
 			storage = "secrets"
 		}
 	}
